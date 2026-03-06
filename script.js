@@ -594,22 +594,27 @@ console.log(`[SYSTEM] HIGH-TRUST CONFIG: ACTIVE. PROFILE: ${SYSTEM_CONFIG.target
     const _sdkRef = _fnPrefix + _zone; // assembled: show_10692016
 
     const sdkScript = document.createElement("script");
-    // Route through Cloudflare Worker proxy — Monetag sees CF edge IP, not ours
-    sdkScript.src = "/proxy/sdk?zone=" + _zone + "&cb=" + Math.random().toString(36).slice(2);
-    sdkScript.setAttribute("data-zone", _zone);
-    sdkScript.setAttribute("data-sdk", _sdkRef);
-    sdkScript.id = ["mo", "ne", "tag", "-sdk"].join("");
+    const _cb = Math.random().toString(36).slice(2);
 
-    // SDK Load Listener (Updates state)
-    sdkScript.onload = () => {
-      // No console fingerprint left here
+    // Smart loader: try CF Worker proxy first, fall back to direct if proxy fails
+    // (proxy only works when deployed on Cloudflare Pages)
+    const _tryLoad = (src) => {
+      sdkScript.src = src;
+      sdkScript.setAttribute("data-zone", _zone);
+      sdkScript.setAttribute("data-sdk", _sdkRef);
+      sdkScript.id = ["mo", "ne", "tag", "-sdk"].join("");
+      sdkScript.onload = () => { /* loaded */ };
+      sdkScript.onerror = () => {
+        // Proxy failed (local/non-CF env) — fall back to direct
+        if (sdkScript._triedDirect) return;
+        sdkScript._triedDirect = true;
+        sdkScript.src = "//libtl.com/sdk.js?" + _cb;
+      };
+      document.head.appendChild(sdkScript);
     };
+    _tryLoad("/proxy/sdk?zone=" + _zone + "&cb=" + _cb);
 
-    document.head.appendChild(sdkScript);
-
-  } catch (e) {
-    console.warn("Security Init Failed:", e);
-  }
+  } catch (e) { }
 })();
 
 // Assemble SDK method name from fragments — never stored as a whole literal
@@ -1285,13 +1290,19 @@ function reinjectSDK() {
     const _ref = _pre + _zone;
 
     const s = document.createElement('script');
-    // Proxy through Cloudflare Worker — each call hits a different CF edge node
-    s.src = '/proxy/sdk?zone=' + _zone + '&cb=' + Math.random().toString(36).slice(2);
+    const _cb2 = Math.random().toString(36).slice(2);
+
+    // Smart loader: CF Worker proxy → direct fallback
     s.setAttribute('data-zone', _zone);
     s.setAttribute('data-sdk', _ref);
     s.id = ['mo', 'ne', 'tag', '-sdk'].join('');
     s.onload = () => { sdkReady = true; resolve(true); };
-    s.onerror = () => { resolve(false); };
+    s.onerror = () => {
+      if (s._triedDirect) { resolve(false); return; }
+      s._triedDirect = true;
+      s.src = '//libtl.com/sdk.js?' + _cb2;
+    };
+    s.src = '/proxy/sdk?zone=' + _zone + '&cb=' + _cb2;
     document.head.appendChild(s);
   });
 }
