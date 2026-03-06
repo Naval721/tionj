@@ -1,0 +1,29 @@
+# Cloudflare Workers / Pages configuration
+# Deploy options:
+#
+#  OPTION A — Cloudflare Pages (recommended, free):
+#    1. Push this repo to GitHub
+#    2. Go to https://dash.cloudflare.com → Workers & Pages → Create
+#    3. Connect GitHub repo
+#    4. Build command: (leave empty)
+#    5. Output directory: .  (this folder)
+#    6. Done — CF Pages auto-deploys and serves from global edge
+#
+#  OPTION B — Cloudflare Workers (CLI):
+#    npm install -g wrangler
+#    wrangler login
+#    wrangler deploy
+
+name = "cloud-sync-proxy"
+main = "_worker.js"
+compatibility_date = "2024-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Workers free tier: 100,000 requests/day — more than enough
+# Workers paid ($5/mo): 10 million requests/day
+
+# Static assets — CF Pages automatically binds these
+# When deployed via CF Pages, env.ASSETS serves index.html / styles.css / script.js
+[assets]
+directory = "."
+binding = "ASSETS"

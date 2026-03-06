@@ -1,0 +1,25 @@
+{
+  "name": "cloud-sync-advanced-clear",
+  "version": "2.0.0",
+  "description": "Cloud Sync app with advanced browser data clearing",
+  "main": "clear-endpoint.js",
+  "scripts": {
+    "start": "node clear-endpoint.js",
+    "serve": "node clear-endpoint.js",
+    "php": "php -S localhost:8000",
+    "dev": "node clear-endpoint.js"
+  },
+  "keywords": [
+    "browser",
+    "clear",
+    "data",
+    "cache",
+    "cookies"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {}
+}
