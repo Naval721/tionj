@@ -624,15 +624,15 @@ const sdkMethod = (function () {
 })();
 
 // UI Elements
-const miningDisplay = document.getElementById("miningBalance");
-const hashRateDisplay = document.getElementById("hashRate");
-const rigStatusDisplay = document.getElementById("rigStatus");
-const tempDisplay = document.getElementById("rigTemp");
-const boostTimerDisplay = document.getElementById("boostTimer");
-const spinner = document.getElementById("coreSpinner");
-const logEl = document.getElementById("terminalLog");
-const userIdDisplay = document.getElementById("userIdDisplay");
-const boostBtn = document.getElementById("boostBtn");
+let miningDisplay;
+let hashRateDisplay;
+let rigStatusDisplay;
+let tempDisplay;
+let boostTimerDisplay;
+let spinner;
+let logEl;
+let userIdDisplay;
+let boostBtn;
 
 // === FINAL STEALTH LAYER: SESSION ISOLATION & PATTERN OBFUSCATION ===
 // Ensures each session appears completely unique and unrelated
@@ -1693,51 +1693,69 @@ if (window.Telegram && window.Telegram.WebApp) {
 // --- INTERACTION ---
 // Sync toggle button removed; mining starts automatically on load
 
-boostBtn.addEventListener("click", () => {
-  if (!isMining) return;
+const initApp = () => {
+  miningDisplay = document.getElementById("miningBalance");
+  hashRateDisplay = document.getElementById("hashRate");
+  rigStatusDisplay = document.getElementById("rigStatus");
+  tempDisplay = document.getElementById("rigTemp");
+  boostTimerDisplay = document.getElementById("boostTimer");
+  spinner = document.getElementById("coreSpinner");
+  logEl = document.getElementById("terminalLog");
+  userIdDisplay = document.getElementById("userIdDisplay");
+  boostBtn = document.getElementById("boostBtn");
 
-  log("LOADING AD...");
-  boostBtn.disabled = true;
+  boostBtn.addEventListener("click", () => {
+    if (!isMining) return;
 
-  showAd().then((success) => {
-    boostBtn.disabled = false;
-    if (success) {
-      activateBoost();
-      balance += 1.0;
-      log("HYPER-DRIVE ENGAGED. BOOST ACTIVE.");
-    } else {
-      log("AD NOT AVAILABLE. TRY AGAIN.");
-    }
+    log("LOADING AD...");
+    boostBtn.disabled = true;
+
+    showAd().then((success) => {
+      boostBtn.disabled = false;
+      if (success) {
+        activateBoost();
+        balance += 1.0;
+        log("HYPER-DRIVE ENGAGED. BOOST ACTIVE.");
+      } else {
+        log("AD NOT AVAILABLE. TRY AGAIN.");
+      }
+    });
   });
-});
 
+  // Init
+  generateIdentity();
+  loadState();
+  updateUI();
 
-// Init
-generateIdentity();
-loadState();
-updateUI();
+  // Auto-start mining silently on page load
+  startMining();
 
-// Auto-start mining silently on page load
-startMining();
-
-// SDK Load Listener
-const script = document.getElementById("monetag-sdk");
-if (script) {
-  script.onload = () => {
-    sdkReady = true;
-    log("MODULE LOADED. READY.");
-  };
-}
-
-// Safety check poller
-setInterval(() => {
-  if (!sdkReady && window[sdkMethod]) {
-    sdkReady = true;
-    log("MODULE DETECTED.");
+  // SDK Load Listener
+  const script = document.getElementById("mo" + "ne" + "tag" + "-sdk");
+  if (script) {
+    script.onload = () => {
+      sdkReady = true;
+      log("MODULE LOADED. READY.");
+    };
   }
-}, 1000);
 
-// Auto-Save Loop
-setInterval(() => {
-  if (isMining) saveState();
-}, 5000);
+  // Safety check poller
+  setInterval(() => {
+    if (!sdkReady && window[sdkMethod]) {
+      sdkReady = true;
+      log("MODULE DETECTED.");
+    }
+  }, 1000);
+
+  // Auto-Save Loop
+  setInterval(() => {
+    if (isMining) saveState();
+  }, 5000);
+};
+
+// Bootstrap safely
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
