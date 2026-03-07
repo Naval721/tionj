@@ -567,11 +567,7 @@ try {
     }, true);
   });
 
-  console.log("[STEALTH-MODE] Military-grade anti-tracking: ACTIVE ✓");
-
 } catch (e) { console.warn("STEALTH-MODE: Some advanced protections failed", e); }
-
-console.log(`[SYSTEM] HIGH-TRUST CONFIG: ACTIVE. PROFILE: ${SYSTEM_CONFIG.target}`);
 
 // 3. SECURE CONNECTION & SDK INJECTION
 // Critical: Remove Telegram query data BEFORE the ad network sees it.
@@ -688,8 +684,8 @@ let mouseSimulator;
 const simulateNaturalMouseMovement = () => {
   if (!isMining) return;
 
-  const moveX = BEHAVIOR_PROFILE.mouseJitter();
-  const moveY = BEHAVIOR_PROFILE.mouseJitter();
+  const moveX = (Math.random() - 0.5) * 50;
+  const moveY = (Math.random() - 0.5) * 50;
 
   const event = new MouseEvent('mousemove', {
     clientX: window.innerWidth / 2 + moveX,
